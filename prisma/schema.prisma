@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // Google / LinkedIn
+  google_id   String? @unique
+  linkedin_id String? @unique
+  verified    Boolean @default(false)
+
+  // User
+  id       String   @id @default(uuid())
+  fullname String
+  email    String   @unique
+  password String?
+  avatar   String?
+  type     UserType?
+
+  // Employments 
+  Employment_status String?
+  Job_title         String?
+  location          String?
+  primary_industry      String?
+  speciality        String?
+  resume            String?
+
+  company_id String?
+  company    Company? @relation("CompanyEmployees", fields: [company_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum UserType {
+  EMPLOYEE
+  REFERESS
+}
+
+model Company {
+  id          String @id @default(uuid())
+  name        String
+  location    String
+  description String
+  website     String
+  logo        String
+  founded     String
+  type        String
+  size        String
+  industry    String
+
+  employees User[] @relation("CompanyEmployees")
+  // jobs      Jobs[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+// model Jobs {
+//   id          String  @id @default(uuid())
+//   title       String
+//   description String
+//   location    String
+//   type        String
+//   salary      String
+//   company_id  String
+//   is_active   Boolean
+//   industry    String
+
+//   company    Company  @relation(fields: [company_id], references: [id])
+//   created_at DateTime @default(now())
+//   updated_at DateTime @updatedAt
+// }
