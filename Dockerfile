@@ -10,11 +10,11 @@ COPY package*.json ./
 # Install project dependencies
 RUN npm install
 
-# Copy the rest of the project files to the working directory
-COPY . .
-
+# Copy the Prisma schema and the Prisma client to the working directory
 RUN npx prisma generate
 
+# Copy the rest of the project files to the working directory
+COPY . .
 
 # Expose a port (if needed)
 EXPOSE 8080

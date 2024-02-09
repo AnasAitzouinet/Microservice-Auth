@@ -17,20 +17,22 @@ model User {
   verified    Boolean @default(false)
 
   // User
-  id       String   @id @default(uuid())
+  id       String    @id @default(uuid())
   fullname String
-  email    String   @unique
+  email    String    @unique
   password String?
   avatar   String?
+  phone    String?
   type     UserType?
 
   // Employments 
-  Employment_status String?
+  Employment_status Employment_status?
   Job_title         String?
   location          String?
-  primary_industry      String?
-  speciality        String?
+  primary_industry  String?
+  speciality        speciality?
   resume            String?
+  Job_type          JobType?
 
   company_id String?
   company    Company? @relation("CompanyEmployees", fields: [company_id], references: [id])
@@ -40,8 +42,85 @@ model User {
 }
 
 enum UserType {
-  EMPLOYEE
+  CANDIADATE
   REFERESS
+}
+
+enum speciality {
+  Engineering
+  ProductManagement
+  Sales
+  DataScience
+  Marketing
+  Operations
+  Design
+  TalentManagement
+  Recruitment
+  HumanResources
+  ProjectManagement
+}
+
+enum Employment_status {
+  Employed
+  Unemployed
+  Student
+  Freelancer
+}
+
+enum primary_industry {
+  Technology
+  Finance
+  Healthcare
+  Education
+  Retail
+  RealEstate
+  Manufacturing
+  Construction
+  Transportation
+  Agriculture
+  Energy
+  Media
+  Entertainment
+  Hospitality
+  Government
+  NonProfit
+  Other
+}
+
+enum Job_title {
+  FrontendDeveloper
+  BackendDeveloper
+  FullStackDeveloper
+  MobileAppDeveloper
+  WebDeveloper
+  DevOpsEngineer
+  UI_UX_Designer
+  Surgeon
+  GeneralPractitioner
+  Pediatrician
+  NursePractitioner
+  Anesthesiologist
+  Radiologist
+  PhysicalTherapist
+  OccupationalTherapist
+  NurseAnesthetist
+  NurseMidwife
+}
+
+enum JobType {
+  FullTime
+  PartTime
+  Contract
+  Internship
+  Temporary
+}
+
+enum CompanyType {
+  Public
+  Private
+  NonProfit
+  Government
+  Educational
 }
 
 model Company {

@@ -8,7 +8,19 @@ const prisma = require('../lib/prisma.js');
 
 // TODO - Add a route to handle Registration
 router.post('/register', async(req, res) => {
-    const { email, password } = req.body;
+    const { 
+        email, 
+        password,
+        type,
+        fullname,
+        phone,
+        location,
+        resume,
+        primary_industry,
+        speciality,
+        Job_title,
+        
+    } = req.body;
 
 
     await prisma.user.create({
@@ -29,7 +41,6 @@ router.post('/register', async(req, res) => {
             error: error,
         });
     });
-    // res.send('Register route');
 });
 
 // Login using local strategy
