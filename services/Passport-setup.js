@@ -4,37 +4,51 @@ const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const prisma = require("../lib/prisma");
 const { findUserByEmail } = require("../lib/Operations");
+const { compare } = require('bcrypt');
+require('dotenv').config();
+
+// serialize and deserialize user
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
 
 // Local Strategy
 passport.use(new LocalStrategy({
-    usernameField: 'email', // Assuming email is your username field
-    passwordField: 'password' // Assuming password is your password field
+    usernameField: 'email',
+    passwordField: 'password'
 }, async (username, password, done) => {
     const user = await findUserByEmail(username);
-    const error = [
-        { Error: 'Invalid email or password' },
-        { Error: 'This Email is Linked to an account created by Either Google or Linkedin' },
-        { Error: 'User does not exist' }
-    ];
-    switch (true) {
-        case !user:
-            return done(null, error[2]);
-        case user && (user.google_id || user.linkedin_id && !user.password):
-            return done(null, error[1]);
-        case user && user.password !== password:
-            return done(null, error[0]);
-        default:
-            return done(null, user)
+
+    if (!user) {
+        return done(null, { Error: 'User does not exist' });
     }
 
-}));
+    if (user.google_id || user.linkedin_id) {
+        return done(null, { Error: 'This Email is Linked to an account created by Either Google or Linkedin' });
+    }
 
+    if (!user.password) {
+        return done(null, { Error: 'Invalid email or password' });
+    }
+
+    const isMatch = await compare(password, user.password);
+    if (!isMatch) {
+        return done(null, { Error: 'Invalid email or password' });
+    }
+
+    return done(null, user);
+}));
 
 
 // Google Strategy
 passport.use(new GoogleStrategy({
-    clientID: '1016676173923-h145m6o24almrsigsd3qpirac371ev84.apps.googleusercontent.com',
-    clientSecret: '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',
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: '/auth/google/redirect',
     scope: ['profile', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
@@ -55,7 +69,7 @@ passport.use(new GoogleStrategy({
             return done(null, user);
         } else {
             console.log('User does not exist');
-            const newUser = await prisma.user.create({
+            const user = await prisma.user.create({
                 data: {
                     fullname: displayName,
                     email,
@@ -63,21 +77,20 @@ passport.use(new GoogleStrategy({
                     google_id: id
                 }
             });
-            console.log(newUser);
-            return done(null, newUser);
+            console.log(user);
+            return done(null, user);
         }
     } catch (error) {
         return { error: error.message, done: done(null, false) };
     }
 }));
 
-
 // LinkedIn Strategy
 passport.use(new LinkedInStrategy({
-    clientID: '78imgdl3ttm8mp',
-    clientSecret: 'lownFkB9s6JngSwA',
+    clientID: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
     callbackURL: 'http://localhost:3000/auth/linkedin/redirect',
-    scope: ['email', 'profile', 'openid'],
+    scope: ['email', 'openid', "r_fullprofile"],
     state: true,
 }, async (accessToken, refreshToken, profile, done) => {
     const { id, displayName, email, picture } = profile;
@@ -98,7 +111,7 @@ passport.use(new LinkedInStrategy({
             }).catch((error) => {
                 console.log(error);
             });
-            console.log(newUser);
+
             return done(null, newUser);
         }
     } catch (error) {
@@ -107,10 +120,3 @@ passport.use(new LinkedInStrategy({
 }));
 
 
-// serialize and deserialize user
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});

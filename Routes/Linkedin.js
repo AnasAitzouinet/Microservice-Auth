@@ -11,8 +11,8 @@ router.get('/linkedin', passport.authenticate('linkedin', {
 
 // callback route for linkedin to redirect to
 router.get('/linkedin/redirect', passport.authenticate('linkedin', {
-    successRedirect: 'http://localhost:3001/Profile',
-    failureRedirect: "/login/failed",
+    successRedirect: process.env.SUCCSESS_URL,
+    failureRedirect: process.env.FAILURE_URL,
 }));
 
 

@@ -10,10 +10,15 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 // callback route for google to redirect to
-router.get('/google/redirect', passport.authenticate('google', {
-    successRedirect: 'http://localhost:3001/Profile',
-    failureRedirect: "http://localhost:3000/login/failed",
-    }));
+router.get('/google/redirect', passport.authenticate('google'),
+    (req, res) => {
+        if(req.user.Error) {
+            res.redirect(proces.env.FAILURE_URL, 401, { error: true, message: req.user.Error })
+        } else if(req.user && !req.user.Error) {
+            // Authentication successful
+            res.redirect(process.env.SUCCSESS_URL)
+        }
+    });
 
 
 // Export the router

@@ -11,100 +11,257 @@ datasource db {
 }
 
 model User {
+  id          String      @id @default(uuid())
   // Google / LinkedIn
-  google_id   String? @unique
-  linkedin_id String? @unique
-  verified    Boolean @default(false)
-
+  google_id   String?     @unique
+  linkedin_id String?     @unique
+  verified    Boolean     @default(false)
   // User
-  id       String    @id @default(uuid())
-  fullname String
-  email    String    @unique
-  password String?
-  avatar   String?
-  phone    String?
-  type     UserType?
-
-  // Employments 
-  Employment_status Employment_status?
-  Job_title         String?
-  location          String?
-  primary_industry  String?
-  speciality        speciality?
-  resume            String?
-  Job_type          JobType?
-
-  company_id String?
-  company    Company? @relation("CompanyEmployees", fields: [company_id], references: [id])
+  fullname    String
+  email       String      @unique
+  password    String?
+  avatar      String?
+  phone       String?
+  type        UserType?
+  // Candidate
+  candidateId String?     @unique
+  candidate   Candidates?
+  // Referee
+  refereeId   String?     @unique
+  referee     Referees?
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
+model Candidates {
+  id              String     @id @default(uuid())
+  job_title       JobTitle
+  description     String
+  speciality      Speciality
+  employment_type JobType
+  experience      String
+  location        String
+  resume          String?
+  skills          String?
+
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id])
+
+  JobsAppliedFor Jobs[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Referees {
+  id            String @id @default(uuid())
+  company       String
+  position      String
+  department    String
+  JobsRefereed  Int?
+  HiredRefereed Int?
+
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id])
+
+  Jobs Jobs[]
+
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  Advertisments Advertisments[]
+}
+
+model Jobs {
+  id                   String     @id @default(uuid())
+  title                String
+  description          String
+  type                 JobType
+  location             String
+  SalaryRange          String
+  status               Boolean
+  speciality           Speciality
+  experience           String
+  skills               String?
+  benefits             String[]
+  number_of_applicants Int
+  applicationsDeadline DateTime
+
+  advertised Boolean
+
+  Apllicants Candidates[]
+
+  HiringManagerID String
+  HiringManager   Referees @relation(fields: [HiringManagerID], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Advertisments   Advertisments? @relation(fields: [advertismentsId], references: [id])
+  advertismentsId String?
+}
+
+model Advertisments {
+  id          String  @id @default(uuid())
+  title       String
+  description String
+  duration    Int
+  status      Boolean
+
+  StartDate DateTime
+  EndDate   DateTime
+
+  Jobs        Jobs[]
+  byRefereeId String
+  ByReferee   Referees @relation(fields: [byRefereeId], references: [id])
+  created_at  DateTime @default(now())
+}
+
+model Comapnies {
+  id          String     @id @default(uuid())
+  name        String
+  location    String
+  speciality  Speciality
+  description String
+}
+
+// model skills {
+//   id   String @id @default(uuid())
+//   name String
+
+//   Jobs         Jobs?       @relation(fields: [jobsId], references: [id])
+//   jobsId       String?
+//   Candidtaes   Candidates? @relation(fields: [candidtaesId], references: [id])
+//   candidtaesId String?
+// }
+
 enum UserType {
   CANDIADATE
-  REFERESS
+  REFEREES
 }
 
-enum speciality {
-  Engineering
-  ProductManagement
-  Sales
-  DataScience
-  Marketing
-  Operations
-  Design
-  TalentManagement
-  Recruitment
-  HumanResources
-  ProjectManagement
+enum Speciality {
+  TECHNOLOGY
+  FINANCE
+  HEALTHCARE
+  EDUCATION
+  RETAIL
+  REAL_ESTATE
+  MANUFACTURING
+  CONSTRUCTION
+  TRANSPORTATION
+  AGRICULTURE
+  ENERGY
+  MEDIA_ENTERTAINMENT
+  HOSPITALITY
 }
 
-enum Employment_status {
-  Employed
-  Unemployed
-  Student
-  Freelancer
-}
-
-enum primary_industry {
-  Technology
-  Finance
-  Healthcare
-  Education
-  Retail
-  RealEstate
-  Manufacturing
-  Construction
-  Transportation
-  Agriculture
-  Energy
-  Media
-  Entertainment
-  Hospitality
-  Government
-  NonProfit
-  Other
-}
-
-enum Job_title {
-  FrontendDeveloper
-  BackendDeveloper
-  FullStackDeveloper
-  MobileAppDeveloper
-  WebDeveloper
-  DevOpsEngineer
-  UI_UX_Designer
-  Surgeon
-  GeneralPractitioner
-  Pediatrician
-  NursePractitioner
-  Anesthesiologist
-  Radiologist
-  PhysicalTherapist
-  OccupationalTherapist
-  NurseAnesthetist
-  NurseMidwife
+enum JobTitle {
+  DATA_SCIENTIST
+  MACHINE_LEARNING_ENGINEER
+  AI_ENGINEER
+  BLOCKCHAIN_DEVELOPER
+  CLOUD_ARCHITECT
+  CYBERSECURITY_ANALYST
+  SECURITY_ENGINEER
+  NETWORK_ENGINEER
+  IT_SUPPORT_SPECIALIST
+  WEB_ANALYST
+  DIGITAL_MARKETING_SPECIALIST
+  SEO_SPECIALIST
+  CONTENT_WRITER
+  SOCIAL_MEDIA_MANAGER
+  FINANCIAL_ANALYST
+  INVESTMENT_BANKER
+  WEALTH_MANAGEMENT_ADVISOR
+  FINANCIAL_PLANNER
+  ACCOUNTANT
+  AUDITOR
+  TAX_ADVISOR
+  RISK_ANALYST
+  COMPLIANCE_OFFICER
+  ANTI_MONEY_LAUNDERING_SPECIALIST
+  FRAUD_ANALYST
+  PHYSICIAN_ASSISTANT
+  NURSE_PRACTITIONER
+  RESPIRATORY_THERAPIST
+  CLINICAL_LABORATORY_TECHNICIAN
+  MEDICAL_ASSISTANT
+  EMERGENCY_MEDICAL_TECHNICIAN
+  PARAMEDIC
+  PHARMACIST
+  PHYSICAL_THERAPIST_ASSISTANT
+  OCCUPATIONAL_THERAPIST_ASSISTANT
+  SPEECH_LANGUAGE_PATHOLOGIST_ASSISTANT
+  TEACHER
+  PROFESSOR
+  LECTURER
+  INSTRUCTIONAL_DESIGNER
+  CURRICULUM_DEVELOPER
+  EDUCATIONAL_TECHNOLOGY_SPECIALIST
+  SCHOOL_COUNSELOR
+  SCHOOL_ADMINISTRATOR
+  EARLY_CHILDHOOD_EDUCATOR
+  STORE_MANAGER
+  ASSISTANT_MANAGER
+  SALES_ASSOCIATE
+  CASHIER
+  MERCHANDISER
+  BUYER
+  SUPPLY_CHAIN_MANAGER
+  LOGISTICS_SPECIALIST
+  E_COMMERCE_MANAGER
+  CUSTOMER_SERVICE_REPRESENTATIVE
+  REAL_ESTATE_AGENT
+  REALTOR
+  BROKER
+  APPRAISER
+  PROPERTY_MANAGER
+  LOAN_OFFICER
+  MECHANICAL_ENGINEER
+  CHEMICAL_ENGINEER
+  INDUSTRIAL_ENGINEER
+  MANUFACTURING_ENGINEER
+  QUALITY_CONTROL_INSPECTOR
+  SUPPLY_CHAIN_ANALYST
+  PRODUCTION_SUPERVISOR
+  LINE_WORKER
+  PROJECT_MANAGER
+  ARCHITECT
+  ENGINEER
+  CONSTRUCTION_MANAGER
+  SITE_SUPERINTENDENT
+  CARPENTER
+  ELECTRICIAN
+  PLUMBER
+  HVAC_TECHNICIAN
+  TRUCK_DRIVER
+  PILOT
+  SHIP_CAPTAIN
+  TRAIN_CONDUCTOR
+  LOGISTICS_COORDINATOR
+  FREIGHT_BROKER
+  FARM_MANAGER
+  AGRONOMIST
+  ANIMAL_SCIENTIST
+  FOOD_SCIENTIST
+  SUSTAINABLE_AGRICULTURE_SPECIALIST
+  AGRICULTURAL_TECHNICIAN
+  FARMWORKER
+  RENEWABLE_ENERGY_ENGINEER
+  SUSTAINABILITY_ANALYST
+  OIL_GAS_ENGINEER
+  POWER_PLANT_OPERATOR
+  TRANSMISSION_DISTRIBUTION_TECHNICIAN
+  NUCLEAR_ENGINEER
+  SMART_GRID_SPECIALIST
+  JOURNALIST
+  PUBLIC_RELATIONS_SPECIALIST
+  MARKETING_MANAGER
+  ADVERTISING_SPECIALIST
+  FILM_PRODUCER
+  DIRECTOR
+  ACTOR
 }
 
 enum JobType {
@@ -122,38 +279,3 @@ enum CompanyType {
   Government
   Educational
 }
-
-model Company {
-  id          String @id @default(uuid())
-  name        String
-  location    String
-  description String
-  website     String
-  logo        String
-  founded     String
-  type        String
-  size        String
-  industry    String
-
-  employees User[] @relation("CompanyEmployees")
-  // jobs      Jobs[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-// model Jobs {
-//   id          String  @id @default(uuid())
-//   title       String
-//   description String
-//   location    String
-//   type        String
-//   salary      String
-//   company_id  String
-//   is_active   Boolean
-//   industry    String
-
-//   company    Company  @relation(fields: [company_id], references: [id])
-//   created_at DateTime @default(now())
-//   updated_at DateTime @updatedAt
-// }
