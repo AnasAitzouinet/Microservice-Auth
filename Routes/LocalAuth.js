@@ -100,7 +100,6 @@ router.post('/upload', upload.single("file"), async (req, res) => {
     blobStream.end(req.file.buffer);
 });
 
-
 // TODO - Add a route to handle Registration
 router.post('/register', async (req, res) => {
     const {
@@ -142,7 +141,7 @@ router.post('/register', async (req, res) => {
                 data: {
                     email,
                     fullname,
-                    password:hashedPassword,
+                    password: hashedPassword,
                     avatar,
                     phone,
                     type,
@@ -165,7 +164,7 @@ router.post('/register', async (req, res) => {
                 data: {
                     email,
                     fullname,
-                    password:hashedPassword,
+                    password: hashedPassword,
                     avatar,
                     phone,
                     type,
@@ -287,7 +286,115 @@ router.put('/edit', (req, res) => {
     }
 });
 
+router.get('/getAlluser', async (req, res) => {
+    const users = await prisma.user.findMany({
+        include: {
+            candidate: true,
+            referee: true,
+        }
+    });
+    res.status(200).json(users);
+});
 
 
+router.post('/getUser', async (req, res) => {
+    const { userID, receiverID } = req.body;
+
+    if (!userID || !receiverID) {
+        res.status(400).json({ error: true, message: "User ID and receiver user ID must be provided" });
+    }
+    let user;
+    let receiver;
+    try {
+        user = await prisma.user.findUnique({
+            where: {
+                id: userID
+            },
+            include: {
+                candidate: true,
+                referee: true,
+            }
+        });
+        receiver = await prisma.user.findUnique({
+            where: {
+                id: receiverID
+            },
+            include: {
+                candidate: true,
+                referee: true,
+            }
+        });
+        res.status(200).json({ user, receiver });
+    } catch (error) {
+        console.log(error.message);
+    }
+
+
+});
+
+
+router.post('/getUsersBytype', async (req, res) => {
+    const { type } = req.body;
+    if (!type) {
+        return res.status(400).json({ error: true, message: "User type must be provided and either REFEREES OR CANDIDATE" });
+    }
+
+    const getUsers = async (type) => {
+        const users = await prisma.user.findMany({
+            where: {
+                type: type
+            },
+            include: {
+                candidate: true,
+                referee: true,
+            }
+        });
+        return users;
+    }
+
+    switch (type) {
+        case "REFEREES":
+            const referees = await getUsers("CANDIADATE");
+            res.status(200).json(referees);
+            break;
+        case "CANDIADATE":
+            const candidates = await getUsers("REFEREES");
+            res.status(200).json(candidates);
+            break;
+        default:
+            return res.status(400).json({ error: true, message: "Invalid user type" });
+            break;
+    }
+
+});
+
+
+
+
+router.get('/getReferee', async (req, res) => {
+    const users = await prisma.user.findMany
+        ({
+            where: {
+                type: "REFEREES"
+            },
+            include: {
+                referee: true
+            }
+        });
+    res.status(200).json(users);
+});
+
+router.get('/getCandidate', async (req, res) => {
+    const users = await prisma.user.findMany
+        ({
+            where: {
+                type: "CANDIADATE"
+            },
+            include: {
+                candidate: true
+            }
+        });
+    res.status(200).json(users);
+});
 const LocalAuth = router
 module.exports = router;

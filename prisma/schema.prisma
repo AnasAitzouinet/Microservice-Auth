@@ -26,9 +26,31 @@ model User {
   // Candidate
   candidateId String?     @unique
   candidate   Candidates?
+
   // Referee
-  refereeId   String?     @unique
-  referee     Referees?
+  refereeId String?   @unique
+  referee   Referees?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum ConnectionType {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Connections {
+  id String @id @default(uuid())
+
+  connectionStatus ConnectionType
+
+  connectedCandidate Candidates @relation(fields: [connectedCandidateId], references: [id])
+  connectedByReferee Referees   @relation(fields: [connectedByRefereeId], references: [id])
+
+  connectedCandidateId String
+  connectedByRefereeId String
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -50,8 +72,9 @@ model Candidates {
 
   JobsAppliedFor Jobs[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  Connections Connections[]
 }
 
 model Referees {
@@ -70,6 +93,7 @@ model Referees {
   created_at    DateTime        @default(now())
   updated_at    DateTime        @updatedAt
   Advertisments Advertisments[]
+  Connections   Connections[]
 }
 
 model Jobs {

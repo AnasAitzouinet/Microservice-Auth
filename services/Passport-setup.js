@@ -52,6 +52,7 @@ passport.use(new GoogleStrategy({
     callbackURL: '/auth/google/redirect',
     scope: ['profile', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
+    console.log(profile)
     const { id, displayName, emails, photos } = profile;
     const email = emails[0].value;
     const photo = photos[0].value;
@@ -93,6 +94,8 @@ passport.use(new LinkedInStrategy({
     scope: ['email', 'openid', "r_fullprofile"],
     state: true,
 }, async (accessToken, refreshToken, profile, done) => {
+    console.log(profile)
+
     const { id, displayName, email, picture } = profile;
     try {
         const user = await findUserByEmail(email);
